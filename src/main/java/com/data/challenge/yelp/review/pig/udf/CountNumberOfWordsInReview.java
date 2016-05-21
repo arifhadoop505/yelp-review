@@ -4,14 +4,13 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 import org.apache.pig.EvalFunc;
-import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 
 import com.data.challenge.yelp.review.beans.Review;
 import com.data.challenge.yelp.review.beans.ReviewWithCount;
 import com.data.challenge.yelp.review.exceptions.SerializerException;
-import com.data.challenge.yelp.review.serde.JSONDeserializer;
+import com.data.challenge.yelp.review.serde.Deserializer;
 import com.data.challenge.yelp.review.serde.ReviewDeserializer;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -20,7 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class CountNumberOfWordsInReview extends EvalFunc<Tuple> {
 	
 	private TupleFactory factory = TupleFactory.getInstance();
-	private JSONDeserializer<Review> reviewDeserializer = new ReviewDeserializer();
+	private Deserializer<Review> reviewDeserializer = new ReviewDeserializer();
 	
 	@Override
 	public Tuple exec(Tuple input) throws IOException {

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class ReviewDeserializer implements JSONDeserializer<Review> {
+public class ReviewDeserializer implements Deserializer<Review> {
 
 	public Review deserialize(String json) throws SerializerException {
 		ObjectMapper mapper = new ObjectMapper();

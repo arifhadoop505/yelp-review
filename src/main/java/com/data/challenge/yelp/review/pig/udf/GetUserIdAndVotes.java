@@ -12,14 +12,14 @@ import org.apache.pig.data.TupleFactory;
 import com.data.challenge.yelp.review.beans.Review;
 import com.data.challenge.yelp.review.beans.Votes;
 import com.data.challenge.yelp.review.exceptions.SerializerException;
-import com.data.challenge.yelp.review.serde.JSONDeserializer;
+import com.data.challenge.yelp.review.serde.Deserializer;
 import com.data.challenge.yelp.review.serde.ReviewDeserializer;
 
 public class GetUserIdAndVotes extends EvalFunc<Tuple> {
 	
 	private TupleFactory factory = TupleFactory.getInstance();
 	private BagFactory bagFactory = BagFactory.getInstance();
-	private JSONDeserializer<Review> reviewDeserializer = new ReviewDeserializer();
+	private Deserializer<Review> reviewDeserializer = new ReviewDeserializer();
 
 	@Override
 	public Tuple exec(Tuple input) throws IOException {
