@@ -17,15 +17,17 @@ import com.data.challenge.yelp.review.serde.Deserializer;
 import com.data.challenge.yelp.review.serde.ReviewDeserializer;
 
 public class GetUserIdAndVotes extends EvalFunc<Tuple> {
-
-	private TupleFactory factory = TupleFactory.getInstance();
+	
+	//TODO Need to add logging for the entire project
+	
+	private TupleFactory tupleFactory = TupleFactory.getInstance();
 	private BagFactory bagFactory = BagFactory.getInstance();
 	private Deserializer<Review> reviewDeserializer = new ReviewDeserializer();
 
 	@Override
 	public Tuple exec(Tuple input) throws IOException {
 		String json = (String) input.get(0);
-		Tuple output = factory.newTuple(2);
+		Tuple output = tupleFactory.newTuple(2);
 		try {
 
 			Review review = reviewDeserializer.deserialize(json);
@@ -36,14 +38,16 @@ public class GetUserIdAndVotes extends EvalFunc<Tuple> {
 			int funnyVotes = votes.getFunny();
 			int usefulVotes = votes.getUseful();
 
-			DataBag bag = bagFactory.newDefaultBag();
+			DataBag bagOfVotes = bagFactory.newDefaultBag();
 
-			addVotesToBag(VoteType.COOL, coolVotes, bag);
-			addVotesToBag(VoteType.FUNNY, funnyVotes, bag);
-			addVotesToBag(VoteType.USEFUL, usefulVotes, bag);
+			addVotesToBag(VoteType.COOL, coolVotes, bagOfVotes);
+			addVotesToBag(VoteType.FUNNY, funnyVotes, bagOfVotes);
+			addVotesToBag(VoteType.USEFUL, usefulVotes, bagOfVotes);
 
 			output.set(0, userId);
-			output.set(1, bag);
+			output.set(1, bagOfVotes);
+			
+			return output;
 
 		} catch (SerializerException e) {
 			// TODO Auto-generated catch block
@@ -55,10 +59,17 @@ public class GetUserIdAndVotes extends EvalFunc<Tuple> {
 
 	private void addVotesToBag(VoteType voteType, int coolVotes, DataBag bag)
 			throws ExecException {
-		Tuple voteTuple = factory.newTuple(2);
+		Tuple voteTuple = tupleFactory.newTuple(2);
 		voteTuple.set(0, voteType.getVoteString());
 		voteTuple.set(1, coolVotes);
 		bag.add(voteTuple);
 	}
-
+	public static void main(String[] args) throws IOException {
+		GetUserIdAndVotes review = new GetUserIdAndVotes();
+		Tuple input = TupleFactory.getInstance().newTuple(1);
+		String json = "{\"votes\": {\"funny\": 0, \"useful\": 0, \"cool\": 0}, \"user_id\": \"PUFPaY9KxDAcGqfsorJp3Q\", \"review_id\": \"Ya85v4eqdd6k9Od8HbQjyA\", \"stars\": 4, \"date\": \"2012-08-01\", \"text\": \"Mr Hoagie is an institution. Walking in, it does seem like a throwback to 30 years ago, old fashioned menu board, booths out of the 70s, and a large selection of food. Their speciality is the Italian Hoagie, and it is voted the best in the area year after year. I usually order the burger, while the patties are obviously cooked from frozen, all of the other ingredients are very fresh. Overall, its a good alternative to Subway, which is down the road.\", \"type\": \"review\", \"business_id\": \"5UmKMjUEUNdYWqANhGckJw\"}\r\n";
+		input.set(0, json);
+		Tuple output = review.exec(input);
+		System.out.println(output);
+	}
 }
