@@ -1,20 +1,16 @@
 package com.data.challenge.yelp.review.pig.udf;
 
 import java.io.IOException;
-import java.io.StringWriter;
 
 import org.apache.pig.EvalFunc;
+import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 
 import com.data.challenge.yelp.review.beans.Review;
-import com.data.challenge.yelp.review.beans.ReviewWithCount;
 import com.data.challenge.yelp.review.exceptions.SerializerException;
 import com.data.challenge.yelp.review.serde.Deserializer;
 import com.data.challenge.yelp.review.serde.ReviewDeserializer;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CountNumberOfWordsInReview extends EvalFunc<Tuple> {
 	
@@ -28,6 +24,7 @@ public class CountNumberOfWordsInReview extends EvalFunc<Tuple> {
 			
 			Review review = reviewDeserializer.deserialize(json);
 			int numWords = countWords(review);
+			
 			Tuple output = getOutputTuple(review, numWords);
 			
 			return output;
@@ -38,15 +35,24 @@ public class CountNumberOfWordsInReview extends EvalFunc<Tuple> {
 		return null;
 	}
 
-	private Tuple getOutputTuple(Review review, int numWords) throws JsonGenerationException, JsonMappingException, IOException {
-		Tuple output = factory.newTuple(2);
-		ReviewWithCount rev2 = new ReviewWithCount(review, numWords);
-		ObjectMapper mapper = new ObjectMapper();
-		StringWriter writer = new StringWriter();
-		mapper.writeValue(writer, rev2);
-		output.set(0, writer.toString());
+
+	private Tuple getOutputTuple(Review review, int numWords)
+			throws ExecException {
+		Tuple output = factory.newTuple(11);
+		output.set(0, review.getUser_id());
+		output.set(1, review.getBusiness_id());
+		output.set(2, review.getDate());
+		output.set(3, review.getReview_id());
+		output.set(4, review.getStars());
+		output.set(5, review.getType());
+		output.set(6, review.getText());
+		output.set(7, review.getVotes().getCool());
+		output.set(8, review.getVotes().getFunny());
+		output.set(9, review.getVotes().getUseful());
+		output.set(10, numWords);
 		return output;
 	}
+
 
 	private int countWords(Review review) {
 		
