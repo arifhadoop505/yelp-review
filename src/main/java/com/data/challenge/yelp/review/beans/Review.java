@@ -1,5 +1,10 @@
 package com.data.challenge.yelp.review.beans;
 
+/**
+ * Bean for holding the review json
+ * 
+ * @author Arif Mohammad
+ */
 public class Review {
 	
 	private String user_id;

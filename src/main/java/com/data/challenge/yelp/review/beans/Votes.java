@@ -1,5 +1,10 @@
 package com.data.challenge.yelp.review.beans;
 
+/**
+ * Bean for holding the Votes nested json with review json
+ * 
+ * @author Arif Mohammad
+ */
 public class Votes {
 	
 	private int funny;

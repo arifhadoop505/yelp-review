@@ -2,6 +2,8 @@ package com.data.challenge.yelp.review.pig.udf;
 
 import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.Tuple;
@@ -12,8 +14,16 @@ import com.data.challenge.yelp.review.exceptions.SerializerException;
 import com.data.challenge.yelp.review.serde.Deserializer;
 import com.data.challenge.yelp.review.serde.ReviewDeserializer;
 
+/**
+ * Pig UDF for counting and reporting the number of words in a review. The udf also deserializes 
+ * and returns the review text in a tuple.
+ * 
+ * @author Arif Mohammad
+ */
 public class CountNumberOfWordsInReview extends EvalFunc<Tuple> {
 	
+	private static final Log LOG = LogFactory.getLog(CountNumberOfWordsInReview.class);
+
 	private TupleFactory factory = TupleFactory.getInstance();
 	private Deserializer<Review> reviewDeserializer = new ReviewDeserializer();
 	
@@ -22,20 +32,38 @@ public class CountNumberOfWordsInReview extends EvalFunc<Tuple> {
 		String json = (String) input.get(0);
 		try {
 			
+			LOG.trace("Processing json object: " + json);
+			
 			Review review = reviewDeserializer.deserialize(json);
 			int numWords = countWords(review);
 			
 			Tuple output = getOutputTuple(review, numWords);
 			
+			LOG.trace("Sucessfully processed the json object: " + json + 
+					" ,Number of words in the json: " + numWords);
+			
 			return output;
 		} catch (SerializerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			
+			LOG.error("Exception deserializing the input json: " + json, e);
+		} catch(Exception e) {
+			
+			LOG.error("Unknown exception while processing the json: " + json, e);
 		}
 		return null;
 	}
 
-
+	/** 
+	 * 
+	 * This methods takes in the review bean and the number of words of review text and 
+	 * returns a flattened tuple as output
+	 * 
+	 * @param review The deserialized review bean
+	 * @param numWords The number of words counted within the review text bean.
+	 * @return Tuple Tuple containing the fields in the review as well as the number of words
+	 * 		   as in numWords parameter
+	 * @throws ExecException
+	 */
 	private Tuple getOutputTuple(Review review, int numWords)
 			throws ExecException {
 		Tuple output = factory.newTuple(11);
@@ -53,13 +81,26 @@ public class CountNumberOfWordsInReview extends EvalFunc<Tuple> {
 		return output;
 	}
 
-
+	/**
+	 * 
+	 * Private method to count the number of words in a review.
+	 * @param review Deserialized review object
+	 * @return Number of words within the <quote>text</quote> field of the review object
+	 */
 	private int countWords(Review review) {
 		
 		String reviewText = review.getText();
 		String[] words = reviewText.split("\\s");
 		return words.length;
 	}
+	
+	/**
+	 * 
+	 * Driver function just to test the udf.
+	 * 
+	 * @param args
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws IOException {
 		CountNumberOfWordsInReview review = new CountNumberOfWordsInReview();
 		Tuple input = TupleFactory.getInstance().newTuple(1);
